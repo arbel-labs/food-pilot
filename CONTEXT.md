@@ -11,7 +11,7 @@
 | Framework | Flutter 3.47.5 | Diwajibkan dosen |
 | Routing | `go_router` | Rute deklaratif, dukung shell route untuk tab |
 | State | `flutter_riverpod` | Standar komunitas, mudah dites |
-| Database | `drift` + `sqlite3_flutter_libs` | SQLite bertipe, query diperiksa saat kompilasi |
+| Database | `drift` + `drift_flutter` | SQLite bertipe, query diperiksa saat kompilasi. SQLite dibundel lewat build hooks paket `sqlite3`, tanpa `sqlite3_flutter_libs` |
 | Ikon | `lucide_icons_flutter` | Garis tipis, cocok dengan arah desain |
 | Font | Plus Jakarta Sans, aset lokal | Tidak butuh internet, tidak berkedip |
 | Backend | `supabase_flutter` | Auth dan edge function |

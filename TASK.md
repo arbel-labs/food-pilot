@@ -57,7 +57,7 @@ kedua mode.
 
 ## Tahap 2 — Database dan domain
 
-- [ ] Pasang `drift`, `sqlite3_flutter_libs`, `path_provider`, `build_runner`, `drift_dev`
+- [ ] Pasang `drift`, `drift_flutter`, `build_runner`, `drift_dev`
 - [ ] Tulis tabel drift sesuai `CONTEXT.md` bagian 3
 - [ ] Jalankan `build_runner`, pastikan kode tergenerasi tanpa error
 - [ ] Repository per entitas
@@ -204,4 +204,10 @@ sebelum kode pernah dijalankan. Ikut berubah: nama paket Dart
 (foodpilot), applicationId (com.arbelvalley.foodpilot), label aplikasi,
 nama file database, folder project (E:\FoodPilot), dan ikon. Karena
 belum ada instalasi di HP, tidak ada data yang perlu dimigrasi.
+
+Hari yang sama — flutter create berhasil, tapi pub get gagal: drift_flutter
+0.3.1 mewajibkan sqlite3_flutter_libs ^0.6.0+eol, sedangkan pubspec meminta
+^0.5.0. Sejak sqlite3 v3, SQLite dibundel lewat build hooks dan
+sqlite3_flutter_libs tinggal paket kosong. Dependensi itu dihapus, begitu
+juga path_provider yang tidak dipakai langsung di kode.
 ```
