@@ -83,11 +83,13 @@ kodenya yang ditulis ulang.
 | Repo | Repo baru di GitHub `Arbel-valley`, private, terpisah dari repo React Native lama. Nama menyusul di Tahap 0 |
 | Branch | `dev` untuk kerja harian, `main` untuk titik aman tiap tahap |
 
-**Drive C: hampir penuh.** Semua cache sudah diarahkan ke `E:\dev-cache`
-(`PUB_CACHE`, `GRADLE_USER_HOME`, npm, `TEMP`). Jangan pernah menyarankan
-sesuatu yang menulis file besar ke C:. Variabel-variabel itu tidak
-melindungi folder Android SDK dan Flutter SDK, jadi lokasi keduanya ikut
-dicek di Tahap 0.
+**Drive C: hampir penuh.** Cache yang sudah terbukti ada di E:
+`PUB_CACHE` = `E:\dev-cache\pub` dan `GRADLE_USER_HOME` = `E:\Android\.gradle`.
+Jangan pernah menyarankan sesuatu yang menulis file besar ke C:. Variabel
+yang baru diset hanya terbaca oleh program yang dibuka setelahnya, jadi
+VS Code harus ditutup penuh (File → Exit) lalu dibuka lagi. Variabel ini
+tidak melindungi folder Android SDK dan Flutter SDK, jadi lokasi keduanya
+ikut dicek di Tahap 0.
 
 ---
 

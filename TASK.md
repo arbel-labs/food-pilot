@@ -15,7 +15,7 @@ Setiap tahap selesai: push `dev`, merge ke `main`, perbarui Jira.
 
 ## Tahap 0 — Fondasi
 
-- [ ] Pastikan `PUB_CACHE` dan `GRADLE_USER_HOME` menunjuk ke `E:\dev-cache`
+- [ ] Pastikan cache tidak di C:: `PUB_CACHE` = `E:\dev-cache\pub`, `GRADLE_USER_HOME` = `E:\Android\.gradle`
 - [ ] `flutter doctor` bersih untuk toolchain Android
 - [ ] Cek lokasi Android SDK dan Flutter SDK di `flutter doctor -v`: keduanya
       tidak boleh di C: sebelum `flutter run` pertama
@@ -210,4 +210,19 @@ Hari yang sama — flutter create berhasil, tapi pub get gagal: drift_flutter
 ^0.5.0. Sejak sqlite3 v3, SQLite dibundel lewat build hooks dan
 sqlite3_flutter_libs tinggal paket kosong. Dependensi itu dihapus, begitu
 juga path_provider yang tidak dipakai langsung di kode.
+
+Hari yang sama — pub get gagal lagi: flutter_local_notifications 21 menarik
+flutter_local_notifications_windows 3.0 yang butuh xml ^6.5, sedangkan
+pdf 3.13 butuh xml ^7. Dart hanya boleh punya satu versi tiap paket, jadi
+bentrok transitif langsung fatal. Naik ke 22.3.1: rentang xml dilebarkan,
+tanda tangan initialize/zonedSchedule/cancel dan syarat Android tidak
+berubah. Kesimpulan lama bahwa 21 adalah versi stabil terbaru keliru.
+
+Hari yang sama — PUB_CACHE ternyata kosong di terminal, lalu diset ke
+E:\dev-cache\pub. GRADLE_USER_HOME ada di E:\Android\.gradle, bukan
+E:\dev-cache seperti yang ditulis dokumen. Klaim lokasi cache di dokumen
+dikoreksi. Sempat juga menjalankan git init di C:\Users\muham karena
+terminal belum di folder project; folder .git-nya sudah dihapus.
+Pelajaran: klaim lingkungan di dokumen harus dicek, bukan dipercaya, dan
+perintah git selalu diawali cd ke folder project.
 ```

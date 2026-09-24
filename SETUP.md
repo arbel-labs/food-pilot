@@ -7,7 +7,9 @@ Urutkan dari atas. Tiap langkah punya cara memastikan berhasil.
 ## 0. Prasyarat
 
 - Flutter **3.47.5** (`flutter --version`). Jangan di-upgrade.
-- `PUB_CACHE` dan `GRADLE_USER_HOME` menunjuk ke `E:\dev-cache`.
+- `PUB_CACHE` di `E:\dev-cache\pub` dan `GRADLE_USER_HOME` di `E:\Android\.gradle`.
+  Cek dengan `echo $env:PUB_CACHE` di terminal VS Code. Kalau kosong, tutup
+  VS Code lewat File → Exit lalu buka lagi.
 - HP Android tersambung, USB debugging aktif (`flutter devices`).
 
 ---

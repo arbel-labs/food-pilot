@@ -41,7 +41,7 @@ kode sumber rilisnya, bukan dari ingatan):
 | `go_router` | `>=17.0.0 <18.0.0` | lihat catatan di atas |
 | `drift` + `drift_flutter` | `^2.35.0`, `^0.3.1` | `driftDatabase(name:)` yang mengurus lokasi file |
 | `supabase_flutter` | `^2.17.1` | `Supabase.initialize(url:, publishableKey:)`, bukan `anonKey` |
-| `flutter_local_notifications` | `^21.0.0` | versi 23 masih dev dan menuntut `compileSdk 37`, sedangkan Flutter 3.47.5 memakai 36 |
+| `flutter_local_notifications` | `^22.3.1` | versi 21 bentrok dengan `pdf` lewat paket `xml`; API dan syarat Android 22 sama dengan 21 (`compileSdk 36`, desugaring 2.1.4). Versi 23 masih dev dan menuntut `compileSdk 37` |
 | `pdf` + `printing` | `^3.13.1`, `^5.15.1` | laporan bulanan |
 | `timezone` | `^0.11.0` | wajib untuk notifikasi terjadwal |
 
@@ -490,6 +490,7 @@ safe area. Teks gaya Tombol warna `onInk`. Satu layar, satu pil aksi.
 ## 9. Lingkungan
 
 - Windows, PowerShell, Flutter 3.47.5
-- Semua cache di `E:\dev-cache`. **Tidak ada yang boleh ditulis ke C:.**
-- `.env` masuk `.gitignore`. Kunci Gemini hanya di environment Edge
+- Cache di E:: `PUB_CACHE` = `E:\dev-cache\pub`, `GRADLE_USER_HOME` =
+  `E:\Android\.gradle`. **Tidak ada yang boleh ditulis ke C:.**
+- `env.json` masuk `.gitignore`. Kunci Gemini hanya di environment Edge
   Function.
