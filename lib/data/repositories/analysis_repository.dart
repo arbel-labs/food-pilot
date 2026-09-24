@@ -20,7 +20,7 @@ class AnalysisRepository {
     return query.watch().map(
       (rows) => <AnalysisRecord>[
         for (final row in rows)
-          if (_tryParse(row) case final record?) record,
+          ?_tryParse(row),
       ],
     );
   }

@@ -94,7 +94,7 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
 
   List<IngredientInput> get _inputs => <IngredientInput>[
     for (final field in _ingredients)
-      if (field.toInput() case final input?) input,
+      ?field.toInput(),
   ];
 
   int get _cost => hpp(<Ingredient>[
