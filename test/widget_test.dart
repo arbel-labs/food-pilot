@@ -21,9 +21,9 @@ void main() {
     );
 
     await tester.runAsync(
-      () => BusinessRepository(
-        database,
-      ).save(name: 'Warung Uji', type: BusinessType.kuliner),
+      () =>
+          BusinessRepository(database)
+              .save(name: 'Warung Uji', type: BusinessType.kuliner),
     );
 
     await tester.pumpWidget(

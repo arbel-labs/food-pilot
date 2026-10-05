@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:foodpilot/app/theme/app_colors.dart';
+import 'package:foodpilot/app/theme/brand.dart';
 import 'package:foodpilot/app/theme/tokens.dart';
 import 'package:foodpilot/data/providers.dart';
 import 'package:foodpilot/domain/hpp.dart';
@@ -11,6 +12,7 @@ import 'package:foodpilot/domain/models.dart';
 import 'package:foodpilot/shared/format.dart';
 import 'package:foodpilot/shared/widgets/async_view.dart';
 import 'package:foodpilot/shared/widgets/empty_state.dart';
+import 'package:foodpilot/shared/widgets/icon_box.dart';
 import 'package:foodpilot/shared/widgets/pill_tab_bar.dart';
 import 'package:foodpilot/shared/widgets/section_card.dart';
 import 'package:foodpilot/shared/widgets/status_chip.dart';
@@ -107,13 +109,27 @@ class _MenuTile extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final cost = hpp(product.ingredients);
     final value = margin(sellPrice: product.sellPrice, cost: cost);
+    final tone = marginBandColors(context, marginBand(value));
+
+    final initial = product.name.trim().isEmpty
+        ? '?'
+        : product.name.trim().characters.first.toUpperCase();
 
     return Opacity(
       opacity: dimmed ? 0.55 : 1,
       child: SectionCard(
         onTap: () => context.push('/menu/${product.id}'),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            // Kotak huruf ikut warna pita margin, jadi status menu terbaca
+            // sekilas sebelum badge-nya sempat dibaca.
+            IconBox(
+              label: initial,
+              background: tone.background,
+              foreground: tone.foreground,
+            ),
+            const SizedBox(width: AppSpace.s12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,12 +138,11 @@ class _MenuTile extends StatelessWidget {
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleLarge,
+                    style: textTheme.titleMedium,
                   ),
                   const SizedBox(height: AppSpace.s4),
                   Text(
-                    '${formatRupiah(product.sellPrice)} · modal '
-                    '${formatRupiah(cost)}',
+                    'modal ${formatRupiah(cost)}',
                     style: textTheme.bodySmall,
                   ),
                   const SizedBox(height: AppSpace.s8),
@@ -135,7 +150,11 @@ class _MenuTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(LucideIcons.chevronRight, size: 20, color: colors.textMuted),
+            const SizedBox(width: AppSpace.s12),
+            Text(
+              formatRupiah(product.sellPrice),
+              style: AppSerif.number.copyWith(color: colors.text),
+            ),
           ],
         ),
       ),

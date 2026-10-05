@@ -8,9 +8,9 @@ import 'package:flutter/painting.dart';
 abstract final class LightTokens {
   static const Color ink = Color(0xFF1C1A17);
   static const Color onInk = Color(0xFFFAF8F5);
-  static const Color background = Color(0xFFFAF8F5);
+  static const Color background = Color(0xFFF6F1E8);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFE8E3DC);
+  static const Color border = Color(0xFFE6DED1);
   static const Color text = Color(0xFF1C1A17);
   static const Color textMuted = Color(0xFF6B655C);
   static const Color success = Color(0xFF157F48);
@@ -25,9 +25,9 @@ abstract final class LightTokens {
 abstract final class DarkTokens {
   static const Color ink = Color(0xFFF5F1EA);
   static const Color onInk = Color(0xFF191714);
-  static const Color background = Color(0xFF191714);
-  static const Color surface = Color(0xFF23201C);
-  static const Color border = Color(0xFF37322C);
+    static const Color background = Color(0xFF17140F);
+  static const Color surface = Color(0xFF211D18);
+  static const Color border = Color(0xFF35302A);
   static const Color text = Color(0xFFF5F1EA);
   static const Color textMuted = Color(0xFFA39C92);
   static const Color success = Color(0xFF2FA968);

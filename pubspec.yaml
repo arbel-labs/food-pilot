@@ -50,17 +50,22 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
-    - assets/icon/
-    # OFL.txt ikut dibundel supaya lisensi font bisa dibaca di halaman
-    # lisensi aplikasi.
-    - assets/fonts/
-
+    - assets/
   fonts:
     - family: PlusJakartaSans
       fonts:
         - asset: assets/fonts/PlusJakartaSans-Regular.ttf
           weight: 400
+        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+          weight: 500
         - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
           weight: 600
+        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+          weight: 700
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Fraunces-Medium.ttf
+          weight: 500
