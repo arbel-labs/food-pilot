@@ -10,8 +10,10 @@ class DuplicateCostException implements Exception {
 
   final String name;
 
+  String get message => 'Biaya bernama "$name" sudah ada di bulan ini.';
+
   @override
-  String toString() => 'Biaya bernama "$name" sudah ada di bulan ini.';
+  String toString() => message;
 }
 
 class CostRepository {

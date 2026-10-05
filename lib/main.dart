@@ -43,7 +43,7 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
-      overrides: <Override>[
+      overrides: [
         databaseProvider.overrideWithValue(database),
         initialLocationProvider.overrideWithValue(
           hasBusiness ? '/beranda' : '/onboarding',

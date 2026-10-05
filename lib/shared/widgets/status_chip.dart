@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:foodpilot/app/theme/app_colors.dart';
+import 'package:foodpilot/app/theme/brand.dart';
 import 'package:foodpilot/app/theme/tokens.dart';
 import 'package:foodpilot/domain/hpp.dart';
 import 'package:foodpilot/shared/format.dart';
@@ -26,18 +27,53 @@ class StatusChip extends StatelessWidget {
         horizontal: AppSpace.s8,
         vertical: AppSpace.s4,
       ),
-      decoration: ShapeDecoration(color: background, shape: const StadiumBorder()),
+      decoration: ShapeDecoration(
+        color: background,
+        shape: const StadiumBorder(),
+      ),
       child: Text(
         label,
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(color: foreground),
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: foreground,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
 }
 
+/// Warna untuk satu pita margin: latar lembut, teks berwarna penuh.
+///
+/// Dipakai badge sekaligus kotak ikon di baris menu supaya statusnya
+/// terbaca dua kali tanpa menambah elemen baru.
+({Color background, Color foreground}) marginBandColors(
+  BuildContext context,
+  MarginBand band,
+) {
+  final colors = context.colors;
+  final brand = context.brand;
+
+  return switch (band) {
+    MarginBand.loss => (
+      background: brand.dangerTint,
+      foreground: colors.danger,
+    ),
+    MarginBand.thin => (
+      background: brand.warningTint,
+      foreground: colors.warning,
+    ),
+    MarginBand.healthy => (
+      background: brand.successTint,
+      foreground: colors.success,
+    ),
+  };
+}
+
 /// Badge margin di daftar menu: rugi merah, tipis amber, sehat hijau.
+///
+/// Latarnya versi lembut, bukan warna penuh. Dengan banyak kartu dalam satu
+/// layar, badge berwarna penuh ikut bersaing dengan warna merek dan membuat
+/// daftarnya terasa ramai.
 class MarginBadge extends StatelessWidget {
   const MarginBadge({required this.margin, super.key});
 
@@ -45,32 +81,21 @@ class MarginBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     final value = margin;
     final band = marginBand(value);
+    final tone = marginBandColors(context, band);
 
-    final (Color background, Color foreground, String label) = switch (band) {
-      MarginBand.loss => (
-        colors.danger,
-        colors.onDanger,
+    final String label = switch (band) {
+      MarginBand.loss =>
         value == null ? 'Harga belum diisi' : 'Rugi ${formatPercent(value)}',
-      ),
-      MarginBand.thin => (
-        colors.warning,
-        colors.onWarning,
-        'Tipis ${formatPercent(value!)}',
-      ),
-      MarginBand.healthy => (
-        colors.success,
-        colors.onSuccess,
-        'Margin ${formatPercent(value!)}',
-      ),
+      MarginBand.thin => 'Tipis ${formatPercent(value!)}',
+      MarginBand.healthy => 'Margin ${formatPercent(value!)}',
     };
 
     return StatusChip(
       label: label,
-      background: background,
-      foreground: foreground,
+      background: tone.background,
+      foreground: tone.foreground,
     );
   }
 }

@@ -10,6 +10,7 @@ import 'package:foodpilot/domain/models.dart';
 import 'package:foodpilot/domain/profit.dart';
 import 'package:foodpilot/domain/weekly_pattern.dart';
 import 'package:foodpilot/shared/dates.dart';
+import 'package:foodpilot/shared/format.dart';
 
 class AiSummary {
   const AiSummary({

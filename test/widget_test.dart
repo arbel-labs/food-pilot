@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -20,14 +21,14 @@ void main() {
     );
 
     await tester.runAsync(
-      () => BusinessRepository(
-        database,
-      ).save(name: 'Warung Uji', type: BusinessType.kuliner),
+      () =>
+          BusinessRepository(database)
+              .save(name: 'Warung Uji', type: BusinessType.kuliner),
     );
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: <Override>[
+        overrides: [
           databaseProvider.overrideWithValue(database),
           initialLocationProvider.overrideWithValue('/beranda'),
         ],
