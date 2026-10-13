@@ -78,6 +78,39 @@ class _Content extends StatelessWidget {
           style: AppSerif.title.copyWith(color: colors.text),
         ),
 
+                const SizedBox(height: AppSpace.s16),
+        SectionCard(
+          onTap: () => context.push('/beranda/chat'),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpace.s16,
+            vertical: AppSpace.s12,
+          ),
+          child: Row(
+            children: <Widget>[
+              IconBox(
+                icon: LucideIcons.sparkles,
+                background: brand.brandTint,
+                foreground: brand.brand,
+                size: 32,
+              ),
+              const SizedBox(width: AppSpace.s12),
+              Expanded(
+                child: Text(
+                  'Tulis saja, nanti aku catatkan',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colors.textMuted,
+                  ),
+                ),
+              ),
+              Icon(
+                LucideIcons.arrowUpRight,
+                size: 18,
+                color: colors.textMuted,
+              ),
+            ],
+          ),
+        ),
+
         const SizedBox(height: AppSpace.s24),
 
         // Angka utama. Warnanya netral; tanda untung atau rugi dibawa oleh

@@ -17,6 +17,7 @@ import 'package:foodpilot/features/profil/laporan_screen.dart';
 import 'package:foodpilot/features/profil/pengaturan_screen.dart';
 import 'package:foodpilot/features/profil/profil_screen.dart';
 import 'package:foodpilot/features/profil/usaha_screen.dart';
+import 'package:foodpilot/features/chat/chat_screen.dart';
 
 /// Router aplikasi.
 ///
@@ -44,6 +45,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/beranda',
                 builder: (context, state) => const BerandaScreen(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'chat',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const ChatScreen(),
+                  ),
+                ],
               ),
             ],
           ),
