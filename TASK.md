@@ -225,4 +225,12 @@ dikoreksi. Sempat juga menjalankan git init di C:\Users\muham karena
 terminal belum di folder project; folder .git-nya sudah dihapus.
 Pelajaran: klaim lingkungan di dokumen harus dicek, bukan dipercaya, dan
 perintah git selalu diawali cd ke folder project.
+
+2026-10-13 — Mode chat di Edge Function selesai. Catatan model Gemini:
+- gemini-3.1-flash-lite: mengulang sampai 335rb karakter, JSON terpotong
+- gemini-2.5-flash: 404, sudah tidak dibuka untuk pengguna baru
+- gemini-3.8-flash: terlalu lambat, kena batas waktu Edge Function (546)
+- gemini-3.5-flash-lite: JALAN. Ini yang dipakai.
+Skema chat dibuat satu bentuk tanpa cabang aksi. Model cuma menyalin
+nama, harga, dan bahan; keputusan bertanya atau tidak diambil server.
 ```

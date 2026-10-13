@@ -5,6 +5,7 @@ import 'package:foodpilot/core/config.dart';
 import 'package:foodpilot/core/setting_keys.dart';
 import 'package:foodpilot/data/providers.dart';
 import 'package:foodpilot/domain/ai_result.dart';
+import 'package:foodpilot/domain/chat_command.dart';
 
 class AiException implements Exception {
   const AiException(this.message);
@@ -21,6 +22,7 @@ abstract interface class AiService {
   bool get isDemo;
 
   Future<AiResult> analyze(Map<String, Object?> summary);
+    Future<ChatCommand> chat(String kalimat);
 
   Future<String> caption({
     required String businessName,
@@ -42,6 +44,15 @@ class SupabaseAiService implements AiService {
       'ringkasan': summary,
     });
     return AiResult.parse(data);
+  }
+
+    @override
+  Future<ChatCommand> chat(String kalimat) async {
+    final data = await _invoke(<String, Object?>{
+      'mode': 'chat',
+      'kalimat': kalimat,
+    });
+    return ChatCommand.parse(data);
   }
 
   @override
@@ -93,6 +104,28 @@ class DemoAiService implements AiService {
   @override
   bool get isDemo => true;
 
+    @override
+  Future<ChatCommand> chat(String kalimat) async {
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    final teks = kalimat.toLowerCase();
+
+    if (!teks.contains('tambah')) {
+      return const ChatUnknown(
+        'Mode demo hanya mengenali kalimat yang diawali "tambah". '
+        'Contoh: tambah jus mangga 10 rb, bahannya air 2 rb sama sirup 4 rb.',
+      );
+    }
+
+    return const ChatAddMenu(
+      name: 'Jus mangga',
+      sellPrice: 10000,
+      ingredients: <ChatIngredient>[
+        ChatIngredient(name: 'Air', price: 2000),
+        ChatIngredient(name: 'Sirup', price: 4000),
+      ],
+    );
+  }
+
   @override
   Future<AiResult> analyze(Map<String, Object?> summary) async {
     await Future<void>.delayed(const Duration(milliseconds: 700));
@@ -108,8 +141,12 @@ class DemoAiService implements AiService {
             names.putIfAbsent(group, () => name);
           }
         }
+
+        
       }
     }
+
+    
 
     final best = names['Penyumbang laba utama'] ?? 'menu andalan';
     final thin = names['Laku tapi tipis'] ?? 'menu yang marginnya tipis';
