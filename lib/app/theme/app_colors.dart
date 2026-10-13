@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:foodpilot/app/theme/tokens.dart';
 
-/// Warna semantik aplikasi sebagai `ThemeExtension` (CONTEXT.md bagian 7).
-///
-/// Padanannya di web: variable CSS tambahan seperti `--success` yang tidak
-/// disediakan shadcn. Material tidak punya peran "untung" atau "laku tapi
-/// tipis", jadi warnanya disimpan di sini dan ikut berganti di mode gelap.
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
@@ -133,8 +128,7 @@ class AppColors extends ThemeExtension<AppColors> {
   }
 }
 
-/// `context.colors` sama dengan `Theme.of(context).extension<AppColors>()!`,
-/// hanya lebih pendek. Mirip custom hook `useColors()` di React.
+
 extension AppColorsContext on BuildContext {
   AppColors get colors => Theme.of(this).extension<AppColors>()!;
 }

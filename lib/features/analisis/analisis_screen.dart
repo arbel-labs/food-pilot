@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:foodpilot/app/theme/app_colors.dart';
+import 'package:foodpilot/app/theme/brand.dart';
 import 'package:foodpilot/app/theme/tokens.dart';
 import 'package:foodpilot/domain/classify.dart';
 import 'package:foodpilot/features/analisis/analisis_data.dart';
@@ -11,6 +12,7 @@ import 'package:foodpilot/features/analisis/weekly_chart.dart';
 import 'package:foodpilot/shared/format.dart';
 import 'package:foodpilot/shared/widgets/async_view.dart';
 import 'package:foodpilot/shared/widgets/empty_state.dart';
+import 'package:foodpilot/shared/widgets/icon_box.dart';
 import 'package:foodpilot/shared/widgets/link_list_card.dart';
 import 'package:foodpilot/shared/widgets/pill_tab_bar.dart';
 import 'package:foodpilot/shared/widgets/section_card.dart';
@@ -61,7 +63,10 @@ class AnalisisScreen extends ConsumerWidget {
                 ),
               },
               const SizedBox(height: AppSpace.s24),
-              Text('Pola mingguan', style: textTheme.titleLarge),
+              const _SectionHeading(
+                icon: LucideIcons.calendarDays,
+                label: 'Pola mingguan',
+              ),
               const SizedBox(height: AppSpace.s12),
               SectionCard(child: WeeklyChart(pattern: value.pattern)),
               const SizedBox(height: AppSpace.s24),
@@ -89,6 +94,26 @@ class AnalisisScreen extends ConsumerWidget {
   }
 }
 
+/// Judul bagian dengan ikon mungil di kiri.
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Row(
+      children: <Widget>[
+        Icon(icon, size: 16, color: colors.textMuted),
+        const SizedBox(width: AppSpace.s8),
+        Text(label, style: Theme.of(context).textTheme.titleLarge),
+      ],
+    );
+  }
+}
+
 class _NotEnoughData extends StatelessWidget {
   const _NotEnoughData({required this.days});
 
@@ -96,25 +121,46 @@ class _NotEnoughData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final brand = context.brand;
     final textTheme = Theme.of(context).textTheme;
+
     return SectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Data belum cukup', style: textTheme.titleLarge),
-          const SizedBox(height: AppSpace.s8),
-          Text(
-            'Analisis menu butuh minimal $minimumAnalysisDays hari penjualan. '
-            'Sekarang baru $days hari tercatat.',
-            style: textTheme.bodyMedium,
+          Row(
+            children: <Widget>[
+              IconBox(
+                icon: LucideIcons.hourglass,
+                background: brand.brandTint,
+                foreground: brand.brand,
+              ),
+              const SizedBox(width: AppSpace.s12),
+              Expanded(
+                child: Text('Data belum cukup', style: textTheme.titleLarge),
+              ),
+              Text(
+                '$days/$minimumAnalysisDays',
+                style: AppSerif.number.copyWith(color: colors.text),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpace.s12),
           ClipRRect(
             borderRadius: BorderRadius.circular(AppSpace.s4),
             child: LinearProgressIndicator(
               value: days / minimumAnalysisDays,
-              minHeight: 8,
+              minHeight: 6,
+              backgroundColor: colors.border,
+              valueColor: AlwaysStoppedAnimation<Color>(brand.brand),
             ),
+          ),
+          const SizedBox(height: AppSpace.s12),
+          Text(
+            'Analisis menu butuh minimal $minimumAnalysisDays hari penjualan. '
+            'Sekarang baru $days hari tercatat.',
+            style: textTheme.bodyMedium,
           ),
         ],
       ),
@@ -131,21 +177,38 @@ class _Groups extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final brand = context.brand;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        for (final entry in <(MenuClass, Color)>[
-          (MenuClass.mainContributor, colors.success),
-          (MenuClass.popularThin, colors.warning),
-          (MenuClass.drain, colors.danger),
-        ])
+        for (final entry
+            in <(MenuClass, Color, Color, IconData)>[
+              (
+                MenuClass.mainContributor,
+                colors.success,
+                brand.successTint,
+                LucideIcons.trendingUp,
+              ),
+              (
+                MenuClass.popularThin,
+                colors.warning,
+                brand.warningTint,
+                LucideIcons.minus,
+              ),
+              (
+                MenuClass.drain,
+                colors.danger,
+                brand.dangerTint,
+                LucideIcons.trendingDown,
+              ),
+            ])
           _Group(
             menuClass: entry.$1,
             color: entry.$2,
-            items: items
-                .where((item) => item.menuClass == entry.$1)
-                .toList(),
+            tint: entry.$3,
+            icon: entry.$4,
+            items: items.where((item) => item.menuClass == entry.$1).toList(),
             unitWord: unitWord,
           ),
       ],
@@ -157,12 +220,16 @@ class _Group extends StatelessWidget {
   const _Group({
     required this.menuClass,
     required this.color,
+    required this.tint,
+    required this.icon,
     required this.items,
     required this.unitWord,
   });
 
   final MenuClass menuClass;
   final Color color;
+  final Color tint;
+  final IconData icon;
   final List<MenuPerformance> items;
   final String unitWord;
 
@@ -177,21 +244,31 @@ class _Group extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Container(
-                width: 10,
-                height: 10,
-                decoration: ShapeDecoration(
-                  color: color,
-                  shape: const CircleBorder(),
-                ),
+              // Titik bulat diganti kotak ikon supaya kelompoknya terbaca
+              // lewat bentuk, bukan warna saja.
+              IconBox(
+                icon: icon,
+                background: tint,
+                foreground: color,
+                size: 30,
               ),
-              const SizedBox(width: AppSpace.s8),
-              Text(menuClass.label, style: textTheme.titleLarge),
+              const SizedBox(width: AppSpace.s12),
+              Expanded(
+                child: Text(menuClass.label, style: textTheme.titleMedium),
+              ),
+              if (items.isNotEmpty)
+                Text('${items.length}', style: textTheme.bodySmall),
             ],
           ),
           const SizedBox(height: AppSpace.s8),
           if (items.isEmpty)
-            Text('Tidak ada menu di kelompok ini.', style: textTheme.bodySmall)
+            Padding(
+              padding: const EdgeInsets.only(left: 42),
+              child: Text(
+                'Tidak ada menu di kelompok ini.',
+                style: textTheme.bodySmall,
+              ),
+            )
           else
             SectionCard(
               padding: EdgeInsets.zero,
@@ -219,6 +296,7 @@ class _MenuDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final textTheme = Theme.of(context).textTheme;
     final averagePrice = item.qty == 0 ? 0 : (item.revenue / item.qty).round();
     final averageCost = item.qty == 0
@@ -226,6 +304,8 @@ class _MenuDetail extends StatelessWidget {
         : ((item.revenue - item.grossProfit) / item.qty).round();
 
     return ExpansionTile(
+      shape: const Border(),
+      collapsedShape: const Border(),
       tilePadding: const EdgeInsets.symmetric(horizontal: AppSpace.s16),
       childrenPadding: const EdgeInsets.fromLTRB(
         AppSpace.s16,
@@ -234,9 +314,23 @@ class _MenuDetail extends StatelessWidget {
         AppSpace.s16,
       ),
       title: Text(item.name, style: textTheme.bodyLarge),
-      subtitle: Text(
-        '${item.qty} $unitWord · laba ${formatRupiah(item.grossProfit)}',
-        style: textTheme.bodySmall,
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: AppSpace.s4),
+        child: Row(
+          children: <Widget>[
+            Text(
+              formatRupiahCompact(item.grossProfit),
+              style: AppSerif.number.copyWith(fontSize: 17, color: colors.text),
+            ),
+            const SizedBox(width: AppSpace.s8),
+            Expanded(
+              child: Text(
+                'laba · ${item.qty} $unitWord',
+                style: textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
       ),
       children: <Widget>[
         _FormulaLine(

@@ -63,9 +63,4 @@ flutter:
           weight: 600
         - asset: assets/fonts/PlusJakartaSans-Bold.ttf
           weight: 700
-    - family: Fraunces
-      fonts:
-        - asset: assets/fonts/Fraunces-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Fraunces-Medium.ttf
-          weight: 500
+    

@@ -52,3 +52,9 @@ env.json
 android/key.properties
 *.jks
 *.keystore
+
+.env
+
+env.json
+
+supabase/.temp/

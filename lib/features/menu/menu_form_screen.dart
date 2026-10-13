@@ -19,12 +19,10 @@ import 'package:foodpilot/shared/widgets/money_field.dart';
 import 'package:foodpilot/shared/widgets/section_card.dart';
 import 'package:foodpilot/shared/widgets/stat_tile.dart';
 
-/// Form tambah dan ubah menu. Modal per porsi, laba, dan margin berubah
-/// saat mengetik, tanpa tombol hitung (PRD F-02).
 class MenuFormScreen extends ConsumerStatefulWidget {
   const MenuFormScreen({required this.menuId, super.key});
 
-  /// `baru` untuk menu baru, selain itu id menu yang diubah.
+
   final String menuId;
 
   bool get isNew => menuId == 'baru';

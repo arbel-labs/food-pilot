@@ -59,38 +59,39 @@ extension BrandContext on BuildContext {
 
 const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
 
-/// Gaya serif untuk angka dan judul besar.
+/// Gaya untuk angka dan judul besar.
 ///
-/// Kontras antara serif untuk angka dan sans untuk teks biasa adalah hal
-/// tunggal yang paling membuat tampilan terasa dirancang, bukan dirakit.
+/// Semula memakai serif sebagai pembeda, tapi serif display terlalu ramai
+/// saat dipakai di angka yang berulang. Karakternya sekarang datang dari
+/// ukuran, bobot, dan jarak huruf yang rapat.
 class AppSerif {
   const AppSerif._();
 
-  static const String family = 'Fraunces';
+  static const String family = 'PlusJakartaSans';
 
   static const hero = TextStyle(
     fontFamily: family,
-    fontSize: 44,
-    height: 1.02,
-    fontWeight: FontWeight.w500,
-    letterSpacing: -1.4,
+    fontSize: 42,
+    height: 1.05,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -1.8,
     fontFeatures: _tabular,
   );
 
   static const title = TextStyle(
     fontFamily: family,
-    fontSize: 26,
-    height: 1.1,
-    fontWeight: FontWeight.w500,
-    letterSpacing: -0.5,
+    fontSize: 24,
+    height: 1.15,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.6,
   );
 
   static const number = TextStyle(
     fontFamily: family,
-    fontSize: 22,
+    fontSize: 20,
     height: 1.1,
-    fontWeight: FontWeight.w500,
-    letterSpacing: -0.3,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.4,
     fontFeatures: _tabular,
   );
 }
