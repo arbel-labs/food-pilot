@@ -12,7 +12,7 @@ import 'package:foodpilot/domain/models.dart';
 import 'package:foodpilot/shared/format.dart';
 import 'package:foodpilot/shared/widgets/async_view.dart';
 import 'package:foodpilot/shared/widgets/empty_state.dart';
-import 'package:foodpilot/shared/widgets/icon_box.dart';
+import 'package:foodpilot/shared/widgets/menu_thumb.dart';
 import 'package:foodpilot/shared/widgets/pill_tab_bar.dart';
 import 'package:foodpilot/shared/widgets/section_card.dart';
 import 'package:foodpilot/shared/widgets/status_chip.dart';
@@ -111,10 +111,6 @@ class _MenuTile extends StatelessWidget {
     final value = margin(sellPrice: product.sellPrice, cost: cost);
     final tone = marginBandColors(context, marginBand(value));
 
-    final initial = product.name.trim().isEmpty
-        ? '?'
-        : product.name.trim().characters.first.toUpperCase();
-
     return Opacity(
       opacity: dimmed ? 0.55 : 1,
       child: SectionCard(
@@ -122,10 +118,12 @@ class _MenuTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Kotak huruf ikut warna pita margin, jadi status menu terbaca
-            // sekilas sebelum badge-nya sempat dibaca.
-            IconBox(
-              label: initial,
+            // Gambar menu kalau ada. Kalau belum diisi atau gagal dimuat,
+            // jatuh ke kotak huruf berwarna pita margin, jadi status menu
+            // tetap terbaca sekilas sebelum badge-nya sempat dibaca.
+            MenuThumb(
+              imageUrl: product.imageUrl,
+              initial: product.initial,
               background: tone.background,
               foreground: tone.foreground,
             ),

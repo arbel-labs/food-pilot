@@ -84,6 +84,7 @@ class Product {
     required this.sellPrice,
     required this.ingredients,
     this.category,
+    this.imageUrl,
     this.isActive = true,
     this.sortOrder = 0,
   });
@@ -91,10 +92,17 @@ class Product {
   final String id;
   final String name;
   final String? category;
+
+  /// Tautan gambar menu. Null berarti belum diisi.
+  final String? imageUrl;
   final int sellPrice;
   final bool isActive;
   final int sortOrder;
   final List<Ingredient> ingredients;
+
+  /// Huruf pertama nama menu, dipakai saat gambar belum ada.
+  String get initial =>
+      name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
 }
 
 /// Satu baris penjualan dengan snapshot harga dan modal saat transaksi.

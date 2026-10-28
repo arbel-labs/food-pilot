@@ -12,16 +12,17 @@ import 'package:foodpilot/data/repositories/menu_repository.dart';
 import 'package:foodpilot/domain/hpp.dart';
 import 'package:foodpilot/domain/models.dart';
 import 'package:foodpilot/features/menu/caption_sheet.dart';
+import 'package:foodpilot/features/menu/menu_validators.dart';
 import 'package:foodpilot/shared/format.dart';
 import 'package:foodpilot/shared/widgets/action_pill.dart';
 import 'package:foodpilot/shared/widgets/app_snack.dart';
 import 'package:foodpilot/shared/widgets/money_field.dart';
 import 'package:foodpilot/shared/widgets/section_card.dart';
 import 'package:foodpilot/shared/widgets/stat_tile.dart';
+import 'package:foodpilot/shared/widgets/menu_thumb.dart';
 
 class MenuFormScreen extends ConsumerStatefulWidget {
   const MenuFormScreen({required this.menuId, super.key});
-
 
   final String menuId;
 
@@ -32,13 +33,21 @@ class MenuFormScreen extends ConsumerStatefulWidget {
 }
 
 class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
+  /// Kunci form, dipakai untuk menjalankan seluruh validator sekaligus.
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _imageController = TextEditingController();
   final List<_IngredientFields> _ingredients = <_IngredientFields>[];
 
   bool _loading = true;
+  bool _saving = false;
   bool _isActive = true;
-  String? _error;
+
+  /// Pesan error muncul di bawah tiap field hanya setelah pengguna mencoba
+  /// menyimpan. Sebelum itu, form yang masih kosong tidak langsung merah.
+  AutovalidateMode _autoValidate = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -50,6 +59,7 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _imageController.dispose();
     for (final field in _ingredients) {
       field.dispose();
     }
@@ -75,6 +85,7 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
         _nameController.text = product.name;
         _priceController.text = product.sellPrice.toString();
         _isActive = product.isActive;
+        _imageController.text = product.imageUrl ?? '';
         for (final ingredient in product.ingredients) {
           _ingredients.add(
             _IngredientFields(
@@ -91,8 +102,7 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
   }
 
   List<IngredientInput> get _inputs => <IngredientInput>[
-    for (final field in _ingredients)
-      ?field.toInput(),
+    for (final field in _ingredients) ?field.toInput(),
   ];
 
   int get _cost => hpp(<Ingredient>[
@@ -117,42 +127,55 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
   }
 
   Future<void> _save() async {
-    final name = _nameController.text.trim();
-    final price = _sellPrice;
-    final inputs = _inputs;
+    if (_saving) return;
 
-    final String? error;
-    if (name.isEmpty) {
-      error = 'Nama menu wajib diisi.';
-    } else if (price <= 0) {
-      error = 'Harga jual harus lebih dari nol.';
-    } else if (inputs.isEmpty) {
-      error = 'Tambahkan minimal satu bahan dengan jumlah di atas nol.';
-    } else {
-      error = null;
-    }
-    if (error != null) {
-      setState(() => _error = error);
+    // Mulai sekarang error ditampilkan sambil pengguna mengetik, supaya
+    // perbaikannya terlihat langsung tanpa menekan Simpan berulang kali.
+    setState(() => _autoValidate = AutovalidateMode.onUserInteraction);
+
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      showSnackOn(
+        ScaffoldMessenger.of(context),
+        'Ada isian yang belum benar. Cek tanda merah di atas.',
+      );
       return;
     }
 
     final business = ref.read(businessProvider).value;
-    if (business == null) return;
+    if (business == null) {
+      showSnackOn(
+        ScaffoldMessenger.of(context),
+        'Data usaha belum ada. Isi dulu lewat Profil.',
+      );
+      return;
+    }
 
+    setState(() => _saving = true);
     final messenger = ScaffoldMessenger.of(context);
-    await ref
-        .read(menuRepositoryProvider)
-        .saveProduct(
-          id: widget.isNew ? null : widget.menuId,
-          businessId: business.id,
-          name: name,
-          sellPrice: price,
-          ingredients: inputs,
-          isActive: _isActive,
-        );
-    if (!mounted) return;
-    context.pop();
-    showSnackOn(messenger, 'Menu tersimpan');
+
+    try {
+      await ref
+          .read(menuRepositoryProvider)
+          .saveProduct(
+            id: widget.isNew ? null : widget.menuId,
+            businessId: business.id,
+            name: _nameController.text.trim(),
+            sellPrice: _sellPrice,
+            ingredients: _inputs,
+            isActive: _isActive,
+            imageUrl: _imageController.text,
+          );
+      if (!mounted) return;
+      context.pop();
+      showSnackOn(
+        messenger,
+        widget.isNew ? 'Menu baru tersimpan' : 'Perubahan tersimpan',
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showSnackOn(messenger, 'Gagal menyimpan: $error');
+    }
   }
 
   @override
@@ -165,141 +188,218 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
     final price = _sellPrice;
     final marginValue = margin(sellPrice: price, cost: cost);
     final profit = profitPerUnit(sellPrice: price, cost: cost);
-    final error = _error;
+
+    // Peringatan lintas field: bukan error yang memblokir, karena ada menu
+    // pancingan yang memang dijual tipis atau rugi. Pemilik diberi tahu,
+    // bukan dilarang.
+    final rugi = price > 0 && cost > price;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isNew ? 'Tambah menu' : 'Ubah menu'),
-      ),
+      appBar: AppBar(title: Text(widget.isNew ? 'Tambah menu' : 'Ubah menu')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpace.s22,
-                AppSpace.s8,
-                AppSpace.s22,
-                AppSpace.s24,
-              ),
-              children: <Widget>[
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Expanded(
-                        child: StatTile(
-                          value: formatRupiah(cost),
-                          label: 'Modal per $unitWord',
+          : Form(
+              key: _formKey,
+              autovalidateMode: _autoValidate,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpace.s22,
+                  AppSpace.s8,
+                  AppSpace.s22,
+                  AppSpace.s24,
+                ),
+                children: <Widget>[
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Expanded(
+                          child: StatTile(
+                            value: formatRupiah(cost),
+                            label: 'Modal per $unitWord',
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpace.s8),
-                      Expanded(
-                        child: StatTile(
-                          value: formatRupiah(profit),
-                          label: 'Laba per $unitWord',
-                          valueColor: profit < 0 ? colors.danger : null,
+                        const SizedBox(width: AppSpace.s8),
+                        Expanded(
+                          child: StatTile(
+                            value: formatRupiah(profit),
+                            label: 'Laba per $unitWord',
+                            valueColor: profit < 0 ? colors.danger : null,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpace.s8),
-                      Expanded(
-                        child: StatTile(
-                          value: marginValue == null
-                              ? '—'
-                              : formatPercent(marginValue),
-                          label: 'Margin',
-                          valueColor:
-                              marginValue != null && marginValue < 0
-                              ? colors.danger
-                              : null,
+                        const SizedBox(width: AppSpace.s8),
+                        Expanded(
+                          child: StatTile(
+                            value: marginValue == null
+                                ? '—'
+                                : formatPercent(marginValue),
+                            label: 'Margin',
+                            valueColor: marginValue != null && marginValue < 0
+                                ? colors.danger
+                                : null,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpace.s24),
-                TextField(
-                  controller: _nameController,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(labelText: 'Nama menu'),
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: AppSpace.s12),
-                MoneyField(
-                  controller: _priceController,
-                  label: 'Harga jual',
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: AppSpace.s24),
-                Text('Bahan', style: textTheme.titleLarge),
-                const SizedBox(height: AppSpace.s4),
-                Text(
-                  'Isi jumlah bahan untuk satu $unitWord beserta harga per '
-                  'satuannya.',
-                  style: textTheme.bodySmall,
-                ),
-                const SizedBox(height: AppSpace.s12),
-                for (var index = 0; index < _ingredients.length; index++) ...[
-                  _IngredientRow(
-                    // Tanpa key, menghapus baris atas membuat dropdown baris
-                    // bawah tetap menampilkan satuan milik baris yang dihapus,
-                    // karena State dicocokkan berdasarkan posisi.
-                    key: ObjectKey(_ingredients[index]),
-                    fields: _ingredients[index],
-                    onChanged: () => setState(() {}),
-                    onRemove: _ingredients.length == 1
-                        ? null
-                        : () => _removeIngredient(index),
-                  ),
-                  const SizedBox(height: AppSpace.s12),
-                ],
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () =>
-                        setState(() => _ingredients.add(_IngredientFields())),
-                    icon: const Icon(LucideIcons.plus, size: 18),
-                    label: const Text('Tambah bahan'),
-                  ),
-                ),
-                if (!widget.isNew) ...<Widget>[
-                  const SizedBox(height: AppSpace.s12),
-                  SectionCard(
-                    padding: EdgeInsets.zero,
-                    child: SwitchListTile(
-                      value: _isActive,
-                      onChanged: (value) => setState(() => _isActive = value),
-                      title: const Text('Menu aktif'),
-                      subtitle: const Text(
-                        'Menu nonaktif tidak muncul saat mencatat penjualan, '
-                        'tapi riwayatnya tetap tersimpan.',
-                      ),
+                      ],
                     ),
                   ),
+
+                  if (rugi) ...<Widget>[
+                    const SizedBox(height: AppSpace.s12),
+                    _Peringatan(
+                      pesan:
+                          'Modal lebih besar dari harga jual. Menu ini boleh '
+                          'disimpan, tapi tiap $unitWord yang terjual '
+                          'mengurangi laba.',
+                    ),
+                  ],
+
+                  const SizedBox(height: AppSpace.s24),
+                  TextFormField(
+                    controller: _nameController,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Nama menu',
+                      hintText: 'Contoh: Nasi goreng spesial',
+                    ),
+                    validator: validateMenuName,
+                    onChanged: (_) => setState(() {}),
+                  ),
                   const SizedBox(height: AppSpace.s12),
+                  MoneyField(
+                    controller: _priceController,
+                    label: 'Harga jual',
+                    validator: validateSellPrice,
+                    onChanged: (_) => setState(() {}),
+                  ),
+
+                  const SizedBox(height: AppSpace.s12),
+                  TextFormField(
+                    controller: _imageController,
+                    keyboardType: TextInputType.url,
+                    decoration: const InputDecoration(
+                      labelText: 'Tautan gambar (opsional)',
+                      hintText: 'https://...',
+                    ),
+                    validator: validateImageUrl,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  if (_imageController.text.trim().isNotEmpty) ...<Widget>[
+                    const SizedBox(height: AppSpace.s12),
+                    Center(
+                      child: MenuThumb(
+                        imageUrl: _imageController.text.trim(),
+                        initial: _nameController.text.trim().isEmpty
+                            ? '?'
+                            : _nameController.text.trim()[0].toUpperCase(),
+                        background: colors.border,
+                        foreground: colors.textMuted,
+                        size: 96,
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: AppSpace.s24),
+                  Text('Bahan', style: textTheme.titleLarge),
+                  const SizedBox(height: AppSpace.s4),
+                  Text(
+                    'Isi jumlah bahan untuk satu $unitWord beserta harga per '
+                    'satuannya.',
+                    style: textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: AppSpace.s12),
+
+                  for (var index = 0; index < _ingredients.length; index++) ...[
+                    _IngredientRow(
+                      // Tanpa key, menghapus baris atas membuat dropdown baris
+                      // bawah tetap menampilkan satuan milik baris yang
+                      // dihapus, karena State dicocokkan berdasarkan posisi.
+                      key: ObjectKey(_ingredients[index]),
+                      fields: _ingredients[index],
+                      onChanged: () => setState(() {}),
+                      onRemove: _ingredients.length == 1
+                          ? null
+                          : () => _removeIngredient(index),
+                    ),
+                    const SizedBox(height: AppSpace.s12),
+                  ],
+
                   Align(
                     alignment: Alignment.centerLeft,
                     child: TextButton.icon(
-                      onPressed: () => showCaptionSheet(
-                        context,
-                        menuName: _nameController.text.trim(),
-                        price: price,
-                      ),
-                      icon: const Icon(LucideIcons.sparkles, size: 18),
-                      label: const Text('Buat caption promo'),
+                      onPressed: () =>
+                          setState(() => _ingredients.add(_IngredientFields())),
+                      icon: const Icon(LucideIcons.plus, size: 18),
+                      label: const Text('Tambah bahan'),
                     ),
                   ),
+
+                  if (!widget.isNew) ...<Widget>[
+                    const SizedBox(height: AppSpace.s12),
+                    SectionCard(
+                      padding: EdgeInsets.zero,
+                      child: SwitchListTile(
+                        value: _isActive,
+                        onChanged: (value) => setState(() => _isActive = value),
+                        title: const Text('Menu aktif'),
+                        subtitle: const Text(
+                          'Menu nonaktif tidak muncul saat mencatat '
+                          'penjualan, tapi riwayatnya tetap tersimpan.',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpace.s12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () => showCaptionSheet(
+                          context,
+                          menuName: _nameController.text.trim(),
+                          price: price,
+                        ),
+                        icon: const Icon(LucideIcons.sparkles, size: 18),
+                        label: const Text('Buat caption promo'),
+                      ),
+                    ),
+                  ],
                 ],
-                if (error != null) ...<Widget>[
-                  const SizedBox(height: AppSpace.s12),
-                  Text(
-                    error,
-                    style: textTheme.bodyMedium?.copyWith(color: colors.danger),
-                  ),
-                ],
-              ],
+              ),
             ),
       bottomNavigationBar: ActionPill(
-        label: 'Simpan',
-        onPressed: _loading ? null : () => unawaited(_save()),
+        label: _saving ? 'Menyimpan...' : 'Simpan',
+        onPressed: _loading || _saving ? null : () => unawaited(_save()),
+      ),
+    );
+  }
+}
+
+/// Peringatan kuning: memberi tahu, bukan melarang.
+class _Peringatan extends StatelessWidget {
+  const _Peringatan({required this.pesan});
+
+  final String pesan;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(AppSpace.s12),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: colors.warning),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Icon(LucideIcons.triangleAlert, size: 18, color: colors.warning),
+          const SizedBox(width: AppSpace.s8),
+          Expanded(
+            child: Text(
+              pesan,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -329,10 +429,11 @@ class _IngredientRow extends StatelessWidget {
           Row(
             children: <Widget>[
               Expanded(
-                child: TextField(
+                child: TextFormField(
                   controller: fields.nameController,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: const InputDecoration(labelText: 'Nama bahan'),
+                  validator: validateIngredientName,
                   onChanged: (_) => onChanged(),
                 ),
               ),
@@ -348,12 +449,14 @@ class _IngredientRow extends StatelessWidget {
           ),
           const SizedBox(height: AppSpace.s8),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Expanded(
                 flex: 3,
                 child: QtyField(
                   controller: fields.qtyController,
                   label: 'Jumlah',
+                  validator: validateQty,
                   onChanged: (_) => onChanged(),
                 ),
               ),
@@ -361,13 +464,16 @@ class _IngredientRow extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: DropdownButtonFormField<IngredientUnit>(
+                  // Tanpa ini, lebar bawaan dropdown melebihi kolomnya dan
+                  // Flutter menandainya sebagai overflow.
+                  isExpanded: true,
                   initialValue: fields.unit,
                   decoration: const InputDecoration(labelText: 'Satuan'),
                   items: <DropdownMenuItem<IngredientUnit>>[
                     for (final unit in IngredientUnit.values)
                       DropdownMenuItem<IngredientUnit>(
                         value: unit,
-                        child: Text(unit.label),
+                        child: Text(unit.label, overflow: TextOverflow.ellipsis),
                       ),
                   ],
                   onChanged: (unit) {
@@ -383,6 +489,7 @@ class _IngredientRow extends StatelessWidget {
                 child: MoneyField(
                   controller: fields.priceController,
                   label: 'Harga/satuan',
+                  validator: validateUnitPrice,
                   onChanged: (_) => onChanged(),
                 ),
               ),

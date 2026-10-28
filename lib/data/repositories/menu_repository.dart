@@ -52,10 +52,14 @@ class MenuRepository {
     required String name,
     required int sellPrice,
     required List<IngredientInput> ingredients,
+    String? imageUrl,
     bool isActive = true,
   }) async {
     final now = nowMillis();
     final productId = id ?? newId();
+    // Teks kosong disimpan sebagai null, supaya pengecekan di UI cukup
+    // memeriksa null tanpa perlu ikut memeriksa string kosong.
+    final image = (imageUrl ?? '').trim().isEmpty ? null : imageUrl!.trim();
 
     await _db.transaction(() async {
       if (id == null) {
@@ -68,6 +72,7 @@ class MenuRepository {
                 businessId: businessId,
                 name: name,
                 sellPrice: sellPrice,
+                imageUrl: Value(image),
                 isActive: Value(isActive),
                 sortOrder: Value(count),
                 createdAt: now,
@@ -81,6 +86,7 @@ class MenuRepository {
           ProductsCompanion(
             name: Value(name),
             sellPrice: Value(sellPrice),
+            imageUrl: Value(image),
             isActive: Value(isActive),
             updatedAt: Value(now),
           ),
@@ -147,6 +153,7 @@ class MenuRepository {
           id: row.id,
           name: row.name,
           category: row.category,
+          imageUrl: row.imageUrl,
           sellPrice: row.sellPrice,
           isActive: row.isActive,
           sortOrder: row.sortOrder,

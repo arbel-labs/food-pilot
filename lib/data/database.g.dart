@@ -569,6 +569,17 @@ class $ProductsTable extends Products
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _imageUrlMeta = const VerificationMeta(
+    'imageUrl',
+  );
+  @override
+  late final GeneratedColumn<String> imageUrl = GeneratedColumn<String>(
+    'image_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _sellPriceMeta = const VerificationMeta(
     'sellPrice',
   );
@@ -635,6 +646,7 @@ class $ProductsTable extends Products
     businessId,
     name,
     category,
+    imageUrl,
     sellPrice,
     isActive,
     sortOrder,
@@ -678,6 +690,12 @@ class $ProductsTable extends Products
       context.handle(
         _categoryMeta,
         category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
+    if (data.containsKey('image_url')) {
+      context.handle(
+        _imageUrlMeta,
+        imageUrl.isAcceptableOrUnknown(data['image_url']!, _imageUrlMeta),
       );
     }
     if (data.containsKey('sell_price')) {
@@ -741,6 +759,10 @@ class $ProductsTable extends Products
         DriftSqlType.string,
         data['${effectivePrefix}category'],
       ),
+      imageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_url'],
+      ),
       sellPrice: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}sell_price'],
@@ -775,6 +797,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
   final String businessId;
   final String name;
   final String? category;
+  final String? imageUrl;
 
   /// Rupiah.
   final int sellPrice;
@@ -787,6 +810,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
     required this.businessId,
     required this.name,
     this.category,
+    this.imageUrl,
     required this.sellPrice,
     required this.isActive,
     required this.sortOrder,
@@ -801,6 +825,9 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<String>(category);
+    }
+    if (!nullToAbsent || imageUrl != null) {
+      map['image_url'] = Variable<String>(imageUrl);
     }
     map['sell_price'] = Variable<int>(sellPrice);
     map['is_active'] = Variable<bool>(isActive);
@@ -818,6 +845,9 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
+      imageUrl: imageUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageUrl),
       sellPrice: Value(sellPrice),
       isActive: Value(isActive),
       sortOrder: Value(sortOrder),
@@ -836,6 +866,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
       businessId: serializer.fromJson<String>(json['businessId']),
       name: serializer.fromJson<String>(json['name']),
       category: serializer.fromJson<String?>(json['category']),
+      imageUrl: serializer.fromJson<String?>(json['imageUrl']),
       sellPrice: serializer.fromJson<int>(json['sellPrice']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
@@ -851,6 +882,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
       'businessId': serializer.toJson<String>(businessId),
       'name': serializer.toJson<String>(name),
       'category': serializer.toJson<String?>(category),
+      'imageUrl': serializer.toJson<String?>(imageUrl),
       'sellPrice': serializer.toJson<int>(sellPrice),
       'isActive': serializer.toJson<bool>(isActive),
       'sortOrder': serializer.toJson<int>(sortOrder),
@@ -864,6 +896,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
     String? businessId,
     String? name,
     Value<String?> category = const Value.absent(),
+    Value<String?> imageUrl = const Value.absent(),
     int? sellPrice,
     bool? isActive,
     int? sortOrder,
@@ -874,6 +907,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
     businessId: businessId ?? this.businessId,
     name: name ?? this.name,
     category: category.present ? category.value : this.category,
+    imageUrl: imageUrl.present ? imageUrl.value : this.imageUrl,
     sellPrice: sellPrice ?? this.sellPrice,
     isActive: isActive ?? this.isActive,
     sortOrder: sortOrder ?? this.sortOrder,
@@ -888,6 +922,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
           : this.businessId,
       name: data.name.present ? data.name.value : this.name,
       category: data.category.present ? data.category.value : this.category,
+      imageUrl: data.imageUrl.present ? data.imageUrl.value : this.imageUrl,
       sellPrice: data.sellPrice.present ? data.sellPrice.value : this.sellPrice,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
@@ -903,6 +938,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
           ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('category: $category, ')
+          ..write('imageUrl: $imageUrl, ')
           ..write('sellPrice: $sellPrice, ')
           ..write('isActive: $isActive, ')
           ..write('sortOrder: $sortOrder, ')
@@ -918,6 +954,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
     businessId,
     name,
     category,
+    imageUrl,
     sellPrice,
     isActive,
     sortOrder,
@@ -932,6 +969,7 @@ class ProductRow extends DataClass implements Insertable<ProductRow> {
           other.businessId == this.businessId &&
           other.name == this.name &&
           other.category == this.category &&
+          other.imageUrl == this.imageUrl &&
           other.sellPrice == this.sellPrice &&
           other.isActive == this.isActive &&
           other.sortOrder == this.sortOrder &&
@@ -944,6 +982,7 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
   final Value<String> businessId;
   final Value<String> name;
   final Value<String?> category;
+  final Value<String?> imageUrl;
   final Value<int> sellPrice;
   final Value<bool> isActive;
   final Value<int> sortOrder;
@@ -955,6 +994,7 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
     this.businessId = const Value.absent(),
     this.name = const Value.absent(),
     this.category = const Value.absent(),
+    this.imageUrl = const Value.absent(),
     this.sellPrice = const Value.absent(),
     this.isActive = const Value.absent(),
     this.sortOrder = const Value.absent(),
@@ -967,6 +1007,7 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
     required String businessId,
     required String name,
     this.category = const Value.absent(),
+    this.imageUrl = const Value.absent(),
     required int sellPrice,
     this.isActive = const Value.absent(),
     this.sortOrder = const Value.absent(),
@@ -984,6 +1025,7 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
     Expression<String>? businessId,
     Expression<String>? name,
     Expression<String>? category,
+    Expression<String>? imageUrl,
     Expression<int>? sellPrice,
     Expression<bool>? isActive,
     Expression<int>? sortOrder,
@@ -996,6 +1038,7 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
       if (businessId != null) 'business_id': businessId,
       if (name != null) 'name': name,
       if (category != null) 'category': category,
+      if (imageUrl != null) 'image_url': imageUrl,
       if (sellPrice != null) 'sell_price': sellPrice,
       if (isActive != null) 'is_active': isActive,
       if (sortOrder != null) 'sort_order': sortOrder,
@@ -1010,6 +1053,7 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
     Value<String>? businessId,
     Value<String>? name,
     Value<String?>? category,
+    Value<String?>? imageUrl,
     Value<int>? sellPrice,
     Value<bool>? isActive,
     Value<int>? sortOrder,
@@ -1022,6 +1066,7 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
       businessId: businessId ?? this.businessId,
       name: name ?? this.name,
       category: category ?? this.category,
+      imageUrl: imageUrl ?? this.imageUrl,
       sellPrice: sellPrice ?? this.sellPrice,
       isActive: isActive ?? this.isActive,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -1045,6 +1090,9 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
     }
     if (category.present) {
       map['category'] = Variable<String>(category.value);
+    }
+    if (imageUrl.present) {
+      map['image_url'] = Variable<String>(imageUrl.value);
     }
     if (sellPrice.present) {
       map['sell_price'] = Variable<int>(sellPrice.value);
@@ -1074,6 +1122,7 @@ class ProductsCompanion extends UpdateCompanion<ProductRow> {
           ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('category: $category, ')
+          ..write('imageUrl: $imageUrl, ')
           ..write('sellPrice: $sellPrice, ')
           ..write('isActive: $isActive, ')
           ..write('sortOrder: $sortOrder, ')
@@ -4197,6 +4246,7 @@ typedef $$ProductsTableCreateCompanionBuilder = ProductsCompanion Function({
   required String businessId,
   required String name,
   Value<String?> category,
+  Value<String?> imageUrl,
   required int sellPrice,
   Value<bool> isActive,
   Value<int> sortOrder,
@@ -4209,6 +4259,7 @@ typedef $$ProductsTableUpdateCompanionBuilder = ProductsCompanion Function({
   Value<String> businessId,
   Value<String> name,
   Value<String?> category,
+  Value<String?> imageUrl,
   Value<int> sellPrice,
   Value<bool> isActive,
   Value<int> sortOrder,
@@ -4296,6 +4347,11 @@ class $$ProductsTableFilterComposer
 
   ColumnFilters<String> get category => $composableBuilder(
     column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imageUrl => $composableBuilder(
+    column: $table.imageUrl,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4422,6 +4478,11 @@ class $$ProductsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get imageUrl => $composableBuilder(
+    column: $table.imageUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get sellPrice => $composableBuilder(
     column: $table.sellPrice,
     builder: (column) => ColumnOrderings(column),
@@ -4488,6 +4549,9 @@ class $$ProductsTableAnnotationComposer
 
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get imageUrl =>
+      $composableBuilder(column: $table.imageUrl, builder: (column) => column);
 
   GeneratedColumn<int> get sellPrice =>
       $composableBuilder(column: $table.sellPrice, builder: (column) => column);
@@ -4614,6 +4678,7 @@ class $$ProductsTableTableManager
                 Value<String> businessId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String?> category = const Value.absent(),
+                Value<String?> imageUrl = const Value.absent(),
                 Value<int> sellPrice = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
@@ -4625,6 +4690,7 @@ class $$ProductsTableTableManager
                 businessId: businessId,
                 name: name,
                 category: category,
+                imageUrl: imageUrl,
                 sellPrice: sellPrice,
                 isActive: isActive,
                 sortOrder: sortOrder,
@@ -4638,6 +4704,7 @@ class $$ProductsTableTableManager
                 required String businessId,
                 required String name,
                 Value<String?> category = const Value.absent(),
+                Value<String?> imageUrl = const Value.absent(),
                 required int sellPrice,
                 Value<bool> isActive = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
@@ -4649,6 +4716,7 @@ class $$ProductsTableTableManager
                 businessId: businessId,
                 name: name,
                 category: category,
+                imageUrl: imageUrl,
                 sellPrice: sellPrice,
                 isActive: isActive,
                 sortOrder: sortOrder,

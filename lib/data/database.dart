@@ -35,6 +35,7 @@ class Products extends Table {
   TextColumn get businessId => text().references(Businesses, #id)();
   TextColumn get name => text()();
   TextColumn get category => text().nullable()();
+  TextColumn get imageUrl => text().nullable()();
 
   /// Rupiah.
   IntColumn get sellPrice => integer()();
@@ -176,10 +177,17 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'foodpilot'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      // v2: kolom gambar menu. Nullable, jadi data lama tetap sah tanpa
+      // perlu diisi apa pun.
+      if (from < 2) {
+        await m.addColumn(products, products.imageUrl);
+      }
+    },
     beforeOpen: (details) async {
       // SQLite mematikan foreign key secara bawaan. Tanpa ini ON DELETE
       // CASCADE di ingredients dan sale_items tidak berjalan.
